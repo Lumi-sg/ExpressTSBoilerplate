@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import path from "path";
@@ -10,6 +11,7 @@ import mongoose from "mongoose";
 import router from "./router/router";
 
 const app = express();
+dotenv.config();
 
 app.use(
 	cors({
@@ -21,9 +23,14 @@ app.use(compression());
 app.use(bodyParser.json());
 
 //DB Stuff
-const MONGO_URL = "PLAECEHOLDER";
+const MONGO_URL = process.env.MONGODBURL;
 
 mongoose.set("strictQuery", false);
+
+if (!MONGO_URL) {
+	console.error("MONGODBURL environment variable is not set.");
+	process.exit(1); // Exit the application with an error code.
+}
 mongoose.Promise = Promise;
 mongoose.connect(MONGO_URL);
 
@@ -54,7 +61,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", router);
 
 const server = http.createServer(app);
+const port = 3000;
 
-server.listen(8080, () => {
+server.listen(port, () => {
 	console.log("Server running on http://localhost:8080");
 });
